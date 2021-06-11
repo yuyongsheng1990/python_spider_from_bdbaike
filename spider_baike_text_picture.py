@@ -15,8 +15,8 @@ if __name__ == '__main__':
     trigger = True
     while (trigger):
         name = '潘建伟'  # input('查询词语：')
-        intro, profile_dict, img_list = spider_claw.claw(name)
-        spider_downloader.download(name, intro, profile_dict, img_list)
+        intro, profile_dict, br_text_list, img_list = spider_claw.claw(name)
+        spider_downloader.download(name, intro, profile_dict, br_text_list, img_list)
         # print("查询结果：%s" % result)
         trigger = False
 
