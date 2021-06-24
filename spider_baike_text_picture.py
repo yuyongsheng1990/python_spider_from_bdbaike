@@ -14,7 +14,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 if __name__ == '__main__':
     trigger = True
     while (trigger):
-        name = '潘建伟'  # input('查询词语：')
+        name = '郭光灿'  # input('查询词语：')
         intro, profile_dict, br_text_list, img_list = spider_claw.claw(name)
         spider_downloader.download(name, intro, profile_dict, br_text_list, img_list)
         # print("查询结果：%s" % result)

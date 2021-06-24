@@ -57,7 +57,7 @@ def claw(content):
         value = i.get_text().strip(' ')
         # value = re.sub('\n+', '、', i.get_text()).strip('、')  # 老师不让删除换行符
         # value = ''.join(value.split())  # 删除可能存在的乱吗/0a，但一块把空格删除了，实际上不需要
-        valuelist.append(value)
+        valuelist.append(value.strip('\n'))
     for i, j in zip(namelist,
                     valuelist):  # 多遍历循环，zip()接受一系列可迭代对象作为参数，将对象中对应的元素打包成一个个tuple（元组），然后返回由这些tuples组成的list（列表）。
         profile_info[i] = j
@@ -67,20 +67,55 @@ def claw(content):
     br_text_list = []
     title = resume_tag.find(class_='title-text').contents[1]
     # print(title)
-    br_text_list.append('\n'+'title: '+title + '\n')
+    br_text_list.append('title-2: '+title)
     for br in resume_tag.next_siblings:  # 获取人物履历标签后面所有的兄弟标签
         # print(br)
         if type(br) is bs4.element.Tag:  # 判断br是不是一个标签
             # 判断是否是栏目标题下的内容标签
-            if br.name == 'div':
+            if br.name == 'div' and "class" in br.attrs:
                 attrs = ''.join(br.attrs['class'])
                 if attrs == 'para':
                     br_text = re.sub('\n+', '', br.get_text())
-                    br_text_list.append(''.join(br_text.split()) + '\n')
-                elif re.match(r'para-title.*$', attrs):  # 当出现栏目标题时，获取标题名称
+                    # print(br_text)
+                    br_text_list.append(''.join(br_text.split()))
+                # 获取书籍信息
+                elif attrs == 'lemmaWgt-publication':
+                    book_tag = br.find_all('li')
+                    # print(book_info)
+                    book_list = []
+                    for b_li in book_tag:
+                        # print(b_li)
+                        book = {}
+                        key_list = []
+                        value_list = []
+                        [key_list.append(re.sub('\n+', '', i.get_text())) for i in b_li.find_all(class_='item-key')]
+                        # print(key_list)
+                        [value_list.append(re.sub('\n+', '', j.get_text())) for j in b_li.find_all(class_='item-value')]
+                        # print(value_list)
+                        book_info = re.sub('\n+', '', b_li.get_text())
+                        book_name = value_list.pop(0)
+                        # print(book_name)
+                        book.update({'书名': book_name})
+                        # print(book)
+                        for i, j in zip(key_list, value_list):
+                            book.update({i: j})
+
+                        if book_info.endswith(value_list[-1]):
+                            pass
+                        else:
+                            book_desc = book_info.split(value_list[-1])[-1]
+                            book.update({'描述': book_desc})
+                        book_list.append(book)
+                    br_text_list.append(book_list)
+                    # print(book_dict)
+                elif re.match(r'para-titlelevel-2', attrs):  # 当出现栏目2级标题时，获取标题名称
                     title = br.find(class_='title-text').contents[1]
                     # print(title)
-                    br_text_list.append('\n' + 'title: ' + title + '\n')
+                    br_text_list.append('title-2: ' + title)
+                elif re.match(r'para-titlelevel-3', attrs):  # 当出现栏目3级标题时，获取标题名称
+                    title = br.find(class_='title-text').contents[1]
+                    # print(title)
+                    br_text_list.append('title-3: ' + title)
             # 下载表格数据
             elif br.name == 'table':
                 # print(br)
@@ -99,19 +134,19 @@ def claw(content):
                         else:
                             continue
                     # 使带"▪"的三级子标签换行
-                    if '▪' in tr_content:
-                        tr_content = re.sub('▪', '\n▪', tr_content).strip('\n')
+                    # if '▪' in tr_content:
+                        # tr_content = re.sub('▪', '\n▪', tr_content).strip('\n')
                         # tr_content = tr_content + '\n'
                     # print(tr_content)
                     try:
                         # 删除爬取到html内容中的nbsp：str.replace(u'\xa0', u' ')
                         table_content = tr_content.replace(u'\xa0', u' ')
-                        br_text_list.append(table_content.strip('\t') + '\n')
+                        br_text_list.append(table_content.strip('\t'))
                     except Exception as e:
                         print(e)
         else:
             continue
-    print(br_text_list)
+    # print(br_text_list)
 
     # 爬取图片
     # 找到所有img标签，返回一个url的标签列表
