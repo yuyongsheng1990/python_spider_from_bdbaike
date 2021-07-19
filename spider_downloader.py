@@ -20,22 +20,23 @@ def download(name, intro, profile_dict, br_text_list, img_list):
     # print('project_path:' + project_path)
 
     # 保存百科基本信息
-    if not os.path.exists('introduction'):
-        os.mkdir('introduction')
-    introduction_file = project_path + '/introduction/' + name + '.json'
+    # if not os.path.exists('introduction'):
+    #     os.mkdir('introduction')
+    # introduction_file = project_path + '/introduction/' + name + '.json'
     # print(introduction_file)
-    with open(introduction_file, 'w', encoding='utf-8') as f:
+    # with open(introduction_file, 'w', encoding='utf-8') as f:
         # 转换成json格式输出
-        intro_dict = {'基本信息': intro}
+    intro_dict = {'基本信息': intro}
         # 防止json编码时中文ascii乱码，用ensure_ascii=False
-        intro_json_str = json.dumps(intro_dict, indent=4, ensure_ascii=False)
-        f.write(intro_json_str + '\n')
+        # intro_dict_json = json.dumps(intro_dict, indent=4, ensure_ascii=False)
+
+        # f.write(intro_dict_json + '\n')
     # print('introduction输出完毕')
 
     # 将信息框数据以json格式输出
-    with open(introduction_file, 'a+') as f:
-        profile_dict_json = json.dumps(profile_dict, indent=4, ensure_ascii=False, sort_keys=False)
-        f.write(profile_dict_json + '\n')
+    # with open(introduction_file, 'a+') as f:
+        # profile_dict_json = json.dumps(profile_dict, indent=4, ensure_ascii=False, sort_keys=False)
+        # f.write(profile_dict_json + '\n')
     '''
     # 保存信息框数据到excel
     if not os.path.exists('profile'):
@@ -67,72 +68,77 @@ def download(name, intro, profile_dict, br_text_list, img_list):
     '''
 
     # 保存人物履历、职务、研究等栏目内容到基本信息.txt中
-    with open(introduction_file, 'a+') as f:
-        # print(br_text_list)
-        # 转换成json格式输出
-        key_2 = ''
-        value = ''
-        key_3 = ''
-        output_dict_2 = {}
-        output_dict_3 = {}
-        for i in range(len(br_text_list)):
-            # print(i)
-            item = br_text_list[i]
+    # api返回json数据，在web中进行展示
+    cv_output = {}
+    # with open(introduction_file, 'a+') as f:
+    # print(br_text_list)
+    # 转换成json格式输出
+    key_2 = ''
+    value = ''
+    key_3 = ''
+    output_dict_2 = {}
+    output_dict_3 = {}
+    for i in range(len(br_text_list)):
+        # print(i)
+        item = br_text_list[i]
+        if isinstance(item, str):
+            # 2级标题
+            if item.startswith('title-2'):
+                key_2 = item.split(': ')[1]
+                # continue
+            # 3级标题
+            elif item.startswith('title-3'):
+                key_3 = item.split(': ')[1]
+                # continue
+            else:
+                value += item
 
-            if isinstance(item, str):
-                # 2级标题
-                if item.startswith('title-2'):
-                    key_2 = item.split(': ')[1]
-                    continue
-                # 3级标题
-                elif item.startswith('title-3'):
-                    key_3 = item.split(': ')[1]
-                    continue
-
-                else:
-                    value += item
-                    # 根据下一索引的值判断第2级标题还是第3级标题，然后返回字典形式的内容
-                    if i+1 < len(br_text_list):
-                        if br_text_list[i+1].startswith('title-3'):
-                            if key_3:
-                                output_dict_3.update({key_3: value})
-                                key_3 = ''
-                                value = ''
-                                continue
-                        elif br_text_list[i+1].startswith('title-2'):
-                            if key_3:
-                                output_dict_3.update({key_3: value})
-                                output_dict_2 = {key_2: output_dict_3}
-                                output_dict_2_json = json.dumps(output_dict_2, indent=4, ensure_ascii=False)
-                                f.write(output_dict_2_json + '\n')
-                                key_3 = ''
-                                value = ''
-                                output_dict_2 = {}
-                                output_dict_3 = {}
-                                continue
-                            else:
-                                output_dict_2 = {key_2: value}
-                                output_dict_2_json = json.dumps(output_dict_2, indent=4, ensure_ascii=False)
-                                f.write(output_dict_2_json + '\n')
-                                value = ''
-                                output_dict_2 = {}
-                                continue
-                        else:
-                            continue
+            # 根据下一索引的值判断第2级标题还是第3级标题，然后返回字典形式的内容
+            if i+1 < len(br_text_list):
+                if br_text_list[i+1].startswith('title-3'):
+                    if key_3:
+                        output_dict_3.update({key_3: value})
+                        key_3 = ''
+                        value = ''
+                        continue
+                elif br_text_list[i+1].startswith('title-2'):
+                    if key_3:
+                        output_dict_3.update({key_3: value})
+                        output_dict_2 = {key_2: output_dict_3}
+                        cv_output.update(output_dict_2)
+                        # output_dict_2_json = json.dumps(output_dict_2, indent=4, ensure_ascii=False)
+                        # f.write(output_dict_2_json + '\n')
+                        key_3 = ''
+                        value = ''
+                        output_dict_2 = {}
+                        output_dict_3 = {}
+                        continue
                     else:
-                        value = value + br_text_list[-1]
-                        if key_3:
-                            output_dict_3.update({key_3: value})
-                            output_dict_2 = {key_2: output_dict_3}
-                        else:
-                            output_dict_2 = {key_2: value}
-                        output_dict_2_json = json.dumps(output_dict_2, indent=4, ensure_ascii=False)
-                        f.write(output_dict_2_json + '\n')
-            # 输出字典格式的图书信息
-            elif isinstance(item, list):
-                output = json.dumps({key_2: item}, indent=4, ensure_ascii=False)
-                f.write(output)
-                continue
+                        output_dict_2 = {key_2: value}
+                        cv_output.update(output_dict_2)
+                        # output_dict_2_json = json.dumps(output_dict_2, indent=4, ensure_ascii=False)
+                        # f.write(output_dict_2_json + '\n')
+                        value = ''
+                        output_dict_2 = {}
+                        continue
+                else:
+                    continue
+            else:
+                value = value + br_text_list[-1]
+                if key_3:
+                    output_dict_3.update({key_3: value})
+                    output_dict_2 = {key_2: output_dict_3}
+                else:
+                    output_dict_2 = {key_2: value}
+                cv_output.update(output_dict_2)
+                # output_dict_2_json = json.dumps(output_dict_2, indent=4, ensure_ascii=False)
+                # f.write(output_dict_2_json + '\n')
+        # 输出字典格式的图书信息
+        elif isinstance(item, list):
+            cv_output.update({key_2: item})
+            # output = json.dumps({key_2: item}, indent=4, ensure_ascii=False)
+            # f.write(output)
+            continue
     print('人物履历输出完毕')
 
 
@@ -167,3 +173,5 @@ def download(name, intro, profile_dict, br_text_list, img_list):
 
         except HTTPError as e:  # HTTP响应异常处理
             print(e.reason)
+
+    return intro_dict, profile_dict, cv_output

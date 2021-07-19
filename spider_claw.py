@@ -36,6 +36,7 @@ def claw(content):
     name_tag = soup.find_all('dt', class_="basicInfo-item name")  # 找到所有dt标签，返回一个标签列表
     value_tag = soup.find_all('dd', class_="basicInfo-item value")  # 找到所有dd标签，返回一个标签列表
     resume_tag = soup.find('div', class_=re.compile("para-title level-2"))  # 人物履历标签起点
+    # print(resume_tag)
 
     # 处理基本信息：过滤数据，去掉空白
     intro_after_filter = [re.sub('\n+', '', item.get_text()) for item in intro_tag]
@@ -141,7 +142,7 @@ def claw(content):
                     try:
                         # 删除爬取到html内容中的nbsp：str.replace(u'\xa0', u' ')
                         table_content = tr_content.replace(u'\xa0', u' ')
-                        br_text_list.append(table_content.strip('\t'))
+                        br_text_list.append(table_content.strip('\t') + '\n')
                     except Exception as e:
                         print(e)
         else:
