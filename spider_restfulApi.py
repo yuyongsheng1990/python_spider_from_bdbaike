@@ -23,11 +23,11 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # 初始化app, api
-# app = Flask(__name__)
-# app.config['JSON_AS_ASCII'] = False
+app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 
-# @app.route('/<name>')
+@app.route('/<name>')
 def home(name):
 
     # 去除favicon.ico干扰
@@ -69,17 +69,17 @@ if __name__ == '__main__':
     # 设置ip、端口
     # app.run(host='127.0.0.1', port=8891)
     # 启动api接口
-    # app.run()
+    app.run()
 
     # 调试程序
-    trigger = True
-    while (trigger):
-        name = '清华大学'  # input('查询词语：')
-        value = home(name)
-        # intro, profile_dict, br_text_list, img_list = spider_claw.claw(name)
-        # intro_dict, profile_dict, cv_output = spider_downloader.download(name, intro, profile_dict, br_text_list, img_list)
-        # output = [intro_dict, profile_dict, cv_output]
-        print(value)
-        # print("查询结果：%s" % result)
-        trigger = False
+    # trigger = True
+    # while (trigger):
+    #     name = '清华大学'  # input('查询词语：')
+    #     value = home(name)
+    #     # intro, profile_dict, br_text_list, img_list = spider_claw.claw(name)
+    #     # intro_dict, profile_dict, cv_output = spider_downloader.download(name, intro, profile_dict, br_text_list, img_list)
+    #     # output = [intro_dict, profile_dict, cv_output]
+    #     print(value)
+    #     # print("查询结果：%s" % result)
+    #     trigger = False
 
