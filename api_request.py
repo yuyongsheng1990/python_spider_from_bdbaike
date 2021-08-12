@@ -1,16 +1,16 @@
-
 # -*- coding: UTF-8 -*-
 # @Project -> File: python_spider_from_bdbaike -> spider_baike_text_picture
 # @Time: 2021/6/3 20:13
 # @Author: Yu Yongsheng
-# @Description: 从百度百科爬取人物的基本信息、信息框数据和图片
+# @Description: 模拟的api调用程序，记得先启动服务器
 
 import requests
 def request_data(url):
     req = requests.get(url, timeout=30)  # 请求连接
-    req_json = req.json()  # 获取数据
+    req_json = req.content.decode('utf-8')  # 获取数据
     print(req_json)
 
+# 在调用api接口之前，先启动服务器，否则Failed to establish a new connection
 if __name__ == '__main__':
-    url = 'http://127.0.0.1:5000/潘建伟'
+    url = 'http://127.0.0.1:5000/鲶鱼效应'
     request_data(url)

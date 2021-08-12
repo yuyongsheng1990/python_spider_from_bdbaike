@@ -5,6 +5,7 @@
 # @Description: 将爬取的百度百科数据保存下来;
 
 import os
+import re
 from urllib.error import HTTPError
 
 import requests
@@ -124,7 +125,9 @@ def download(name, intro, profile_dict, br_text_list, img_list):
                 else:
                     continue
             else:
-                value = value + br_text_list[-1]
+                if str(br_text_list[-1]).startswith('title'):
+                    value = ''
+
                 if key_3:
                     output_dict_3.update({key_3: value})
                     output_dict_2 = {key_2: output_dict_3}
