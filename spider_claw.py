@@ -45,9 +45,13 @@ def claw(content, href=''):
     intro_after_filter = ''.join(intro_after_filter.split())
     # print(intro_after_filter)
 
+    # 获取html内容便签部分tag<main-content>
+    soup_main = soup.find('div', class_=re.compile('main-content J-content'))
+
     # 抽取信息框数据
-    name_tag = soup.find_all('dt', class_="basicInfo-item name")  # 找到所有dt标签，返回一个标签列表
-    value_tag = soup.find_all('dd', class_="basicInfo-item value")  # 找到所有dd标签，返回一个标签列表
+    profile_tag = soup_main.find('div', class_=re.compile('basic-info'))
+    name_tag = profile_tag.find_all('dt', class_="basicInfo-item name")  # 找到所有dt标签，返回一个标签列表
+    value_tag = profile_tag.find_all('dd', class_="basicInfo-item value")  # 找到所有dd标签，返回一个标签列表
     profile_info = {}
     namelist = []
     valuelist = []
@@ -66,7 +70,97 @@ def claw(content, href=''):
         profile_info[i] = j
     # print(profile_info)
 
-    # 抽取人物履历信息、担任职位、人物经历等所有栏目信息
+    # 抽取人物履历信息、担任职位、人物经历等所有栏目信息v3.0
+    br_text_list = []
+    for br in profile_tag.next_siblings:
+        # print(br)
+        if type(br) is bs4.element.Tag:  # 判断br是不是一个标签
+            # 判断是否是栏目标题下的内容标签
+            if br.name == 'div' and "class" in br.attrs:
+                attrs = ''.join(br.attrs['class'])
+                if re.match(r'para-titlelevel-2', attrs):  # 当出现栏目2级标题时，获取标题名称
+                    title = br.find(class_='title-text').contents[1]
+                    # print(title)
+                    br_text_list.append('title-2: ' + title)
+                elif re.match(r'para-titlelevel-3', attrs):  # 当出现栏目3级标题时，获取标题名称
+                    title = br.find(class_='title-text').contents[1]
+                    # print(title)
+                    br_text_list.append('title-3: ' + title)
+                elif attrs == 'para':
+                    br_text = re.sub('\n+', '', br.get_text())
+                    # print(br_text)
+                    br_text_list.append(''.join(br_text.split()))
+                # 获取书籍信息
+                elif attrs == 'lemmaWgt-publication':
+                    book_tag = br.find_all('li')
+                    # print(book_info)
+                    book_list = []
+                    for b_li in book_tag:
+                        # print(b_li)
+                        book = {}
+                        key_list = []
+                        value_list = []
+                        [key_list.append(re.sub('\n+', '', i.get_text())) for i in b_li.find_all(class_='item-key')]
+                        # print(key_list)
+                        [value_list.append(re.sub('\n+', '', j.get_text())) for j in
+                         b_li.find_all(class_='item-value')]
+                        # print(value_list)
+                        book_info = re.sub('\n+', '', b_li.get_text())
+                        book_name = value_list.pop(0)
+                        # print(book_name)
+                        book.update({'书名': book_name})
+                        # print(book)
+                        for i, j in zip(key_list, value_list):
+                            book.update({i: j})
+
+                        if book_info.endswith(value_list[-1]):
+                            pass
+                        else:
+                            book_desc = book_info.split(value_list[-1])[-1]
+                            book.update({'描述': book_desc})
+                        book_list.append(book)
+                    br_text_list.append(str(book_list))
+                    # print(book_dict)
+
+            # 下载表格数据
+            elif br.name == 'table':
+                # print(br)
+                # 因为br是table-tag标签，所以需要用BeautifulSoup重新声明，以字符串形式
+                # br_soup = BeautifulSoup(str(br), 'lxml')
+                # print(type(br_soup))
+                # find_all()方法只能查找当前标签下的文本匹配标签
+                tr_list = br.find_all('tr')
+                for tr in tr_list:
+                    tr_content = ''
+                    # print(row)
+                    for th in tr.contents:
+                        if type(th) is bs4.element.Tag:
+                            th_text = re.sub('\n', '', th.get_text())
+                            tr_content += th_text + '\t'
+                        else:
+                            continue
+                    # 使带"▪"的三级子标签换行
+                    # if '▪' in tr_content:
+                    # tr_content = re.sub('▪', '\n▪', tr_content).strip('\n')
+                    # tr_content = tr_content + '\n'
+                    # print(tr_content)
+                    try:
+                        # 删除爬取到html内容中的nbsp：str.replace(u'\xa0', u' ')
+                        table_content = tr_content.replace(u'\xa0', u' ')
+                        br_text_list.append(table_content.strip('\t') + '\n')
+                    except Exception as e:
+                        print(e)
+            # html的main主标签结束判断，<div id="J-main-content-end-dom">
+            elif br.name == 'div' and "id" in br.attrs:
+                attrs = ''.join(br.attrs['id'])
+                if re.match(re.compile('J-main-content-end-dom'), attrs):
+                    break
+        else:
+            continue
+
+
+    '''
+    # 抽取人物履历信息、担任职位、人物经历等所有栏目信息v2.0
     # 抽取鲶鱼效应等无标题的信息内容
     try:
         resume_tag = soup.find('div', class_=re.compile("para-title level-2"))  # 人物履历标签起点
@@ -168,8 +262,25 @@ def claw(content, href=''):
                         br_text_list.append(''.join(br_text.split()))
 
     # print(br_text_list)
+    '''
 
-    # 爬取图片
+    # 爬取图片v3.0
+    # 找到所有img标签，返回一个url的标签列表v2.0
+    img_urllist = []
+    img_list = soup_main.select('a>div>img')
+    # print(img_list)
+    for img in img_list:
+        try:
+            # src = img.find('img').get('src')
+            src = img.get('src')
+            if re.match(r'https:(.*)image(.*)auto$', src):
+                img_urllist.append(src)
+        except:
+            continue
+
+    # print(img_urllist)
+    '''
+   # 爬取图片v2.0
     # 找到所有img标签，返回一个url的标签列表
     img_urllist = []
     resp = requests.get(url=url, headers=headers)
@@ -188,6 +299,6 @@ def claw(content, href=''):
             continue
 
     # print(img_urllist)
+    '''
     return intro_after_filter, profile_info, br_text_list, img_urllist
-
 
