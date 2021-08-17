@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 # @Project -> File: python_spider_from_bdbaike -> spider_downloader
-# @Time: 2021/6/8 16:49 
+# @Time: 2021/6/8 16:49
 # @Author: Yu Yongsheng
 # @Description: 将爬取的百度百科数据保存下来;
 
@@ -102,6 +102,10 @@ def download(name, intro, profile_dict, br_text_list, img_list):
                         key_3 = ''
                         value = ''
                         continue
+                    elif key_2 and value:
+                        output_dict_3.update({'': value})
+                        value = ''
+                        continue
                 elif br_text_list[i+1].startswith('title-2'):
                     if key_3:
                         output_dict_3.update({key_3: value})
@@ -142,6 +146,7 @@ def download(name, intro, profile_dict, br_text_list, img_list):
             # output = json.dumps({key_2: item}, indent=4, ensure_ascii=False)
             # f.write(output)
             continue
+    print(cv_output)
     print('人物履历输出完毕')
 
 

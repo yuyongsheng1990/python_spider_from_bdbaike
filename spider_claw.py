@@ -17,7 +17,7 @@ import requests
 
 # 爬虫程序
 def claw(content, href=''):
-    # 访问、下载html网页
+    # 访问、下载html网页，为防止多人重名页面需要人工选择。
     if href:
         url = 'https://baike.baidu.com' + href
     else:

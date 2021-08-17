@@ -12,5 +12,6 @@ def request_data(url):
 
 # 在调用api接口之前，先启动服务器，否则Failed to establish a new connection
 if __name__ == '__main__':
-    url = 'http://127.0.0.1:5000/量子霍尔效应'
+    name = '潘建伟'
+    url = 'http://192.168.0.101:8891/' + name
     request_data(url)

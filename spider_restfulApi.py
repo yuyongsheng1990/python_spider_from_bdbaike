@@ -26,7 +26,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
-
+# 接受测试程序发送的调用api的查询请求url，并将查询请求url最后"/"后面的查询字符串(人名)输入到主函数home(name)中
 @app.route('/<name>')
 def home(name):
 
@@ -61,20 +61,20 @@ def home(name):
         intro_dict, profile_dict, cv_output = spider_downloader.download(name, intro, profile_dict, br_text_list, img_list)
         output = [intro_dict, profile_dict, cv_output]
         # print(output)
-        intro_dict_json = json.dumps(output, indent=4, ensure_ascii=False)
-        return intro_dict_json
+        output_json = json.dumps(output, indent=4, ensure_ascii=False)
+        return output_json
 
 
 if __name__ == '__main__':
     # 设置ip、端口
-    # app.run(host='127.0.0.1', port=8891)
+    app.run(host='192.168.0.101', port=8891)
     # 启动api接口
-    app.run()
+    # app.run()
 
     # 调试程序
     # trigger = True
     # while (trigger):
-    #     name = '清华大学'  # input('查询词语：')
+    #     name = '赵忠尧'  # input('查询词语：')
     #     value = home(name)
     #     # intro, profile_dict, br_text_list, img_list = spider_claw.claw(name)
     #     # intro_dict, profile_dict, cv_output = spider_downloader.download(name, intro, profile_dict, br_text_list, img_list)
